@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PayPal Payment</title>
+  <!Client ID اBAAshE70qhIu3N0HaQpeyvpe_ElW1zvszxYhQ3ihifdCRlAODPpUHp80SNXO_X4p7J5C_z1kWjHO29Bn9I>
+  <script src="https://www.paypal.com/sdk/js?client-id=BAAshE70qhIu3N0HaQpeyvpe_ElW1zvszxYhQ3ihifdCRlAODPpUHp80SNXO_X4p7J5C_z1kWjHO29Bn9I&currency=USD"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f8f9fa;
+    }
+    #paypal-button-container {
+      width: 90%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="paypal-button-container"></div>
+
+  <script>
+    paypal.Buttons({
+      // إنشاء طلب الدفع
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: '10.00' // 1
+            }
+          }]
+        });
+      },
+      // عند نجاح الدفع
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          var successPayload = JSON.stringify({
+            status: "SUCCESS",
+            orderID: data.orderID,
+            payerName: details.payer.name.given_name
+          });
+          
+          // إرسال النتيجة للتطبيق لو مفتوح جوة WebViewer
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString(successPayload);
+          } else {
+            alert("تم الدفع بنجاح! Order ID: " + data.orderID);
+          }
+        });
+      },
+      // في حالة حدوث خطأ
+      onError: function(err) {
+        var errorPayload = JSON.stringify({
+          status: "ERROR",
+          message: err.toString()
+        });
+        
+        if (window.AppInventor) {
+          window.AppInventor.setWebViewString(errorPayload);
+        } else {
+          alert("حدث خطأ أثناء عملية الدفع");
+        }
+      }
+    }).render('#paypal-button-container');
+  </script>
+</body>
+</html>
